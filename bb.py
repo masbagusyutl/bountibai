@@ -8,17 +8,16 @@ def read_data(filename):
         return [line.strip() for line in file]
 
 # Fungsi untuk mengirim permintaan POST
-def send_post_request(cookie):
-    url = "https://recent-deals.vercel.app/api/trpc/userExp.startFarm?batch=1"
+def send_post_request(url, cookie, action, account_number):
     headers = {
         "Cookie": cookie,
         "Content-Type": "application/json"
     }
     response = requests.post(url, headers=headers)
     if response.status_code == 200:
-        print("Request successful")
+        print(f"Account {account_number}: {action} request successful")
     else:
-        print("Request failed")
+        print(f"Account {account_number}: {action} request failed with status code: {response.status_code}")
 
 # Fungsi untuk menampilkan hitung mundur
 def countdown(t):
@@ -26,7 +25,7 @@ def countdown(t):
         mins, secs = divmod(t, 60)
         hours, mins = divmod(mins, 60)
         time_format = '{:02d}:{:02d}:{:02d}'.format(hours, mins, secs)
-        print(time_format, end='\r')
+        print(f"Countdown: {time_format}", end='\r')
         time.sleep(1)
         t -= 1
     print('Countdown finished! Starting again...')
@@ -39,8 +38,13 @@ def main():
 
     while True:
         for index, cookie in enumerate(cookies):
-            print(f'Processing account {index + 1}/{num_accounts}')
-            send_post_request(cookie)
+            account_number = index + 1
+            print(f'Processing account {account_number}/{num_accounts}')
+            # Harvest farm
+            send_post_request("https://recent-deals.vercel.app/api/trpc/userExp.harvestFarm?batch=1", cookie, "Harvest farm", account_number)
+            time.sleep(5)
+            # Start farm
+            send_post_request("https://recent-deals.vercel.app/api/trpc/userExp.startFarm?batch=1", cookie, "Start farm", account_number)
             time.sleep(5)
         
         print('All accounts processed. Starting 8-hour countdown...')
